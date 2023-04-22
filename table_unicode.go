@@ -24,7 +24,7 @@ func simpleSyms(center, row, column string) []string {
 	return []string{row, column, center, center, center, center, center, center, center, center, center}
 }
 
-// Use unicode box drawing symbols to achieve the specified line styles.
+// SetUnicodeHV Use unicode box drawing symbols to achieve the specified line styles.
 // Note that combinations of thick and double lines are not supported.
 // Will return an error in case of unsupported combinations.
 func (t *Table) SetUnicodeHV(horizontal, vertical UnicodeLineStyle) error {
@@ -45,7 +45,7 @@ func (t *Table) SetUnicodeHV(horizontal, vertical UnicodeLineStyle) error {
 	case horizontal == Double && vertical == Regular:
 		syms = symsDR
 	default:
-		return errors.New("Unsupported combination of unicode line styles")
+		return errors.New("unsupported combination of unicode line styles")
 	}
 	t.syms = make([]string, 0, 11)
 	for _, sym := range []rune(syms) {

@@ -318,6 +318,11 @@ func (t *Table) SetAutoMergeCellsByColumnIndex(cols []int) {
 	}
 }
 
+// SetOutput set table output
+func (t *Table) SetOutput(w io.Writer) {
+	t.out = w
+}
+
 // SetBorder Set Table Border
 // This would enable / disable line around the table
 // Deprecated: use EnableBorder

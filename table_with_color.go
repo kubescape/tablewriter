@@ -80,7 +80,13 @@ func makeSequence(codes []int) string {
 }
 
 // Adding ANSI escape  sequences before and after string
-func format(s string, codes interface{}) string {
+func format(s string, codes interface{}, isTTYAttached bool) string {
+    // Don't add ANSI escape sequences if the writer is
+    // not attached to a TTY.
+    if !isTTYAttached {
+        return s
+    }
+
 	var seq string
 
 	switch v := codes.(type) {

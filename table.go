@@ -13,9 +13,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"reflect"
 	"regexp"
 	"strings"
+
+    "golang.org/x/crypto/ssh/terminal"
 )
 
 const (
@@ -70,6 +73,7 @@ const (
 
 type Table struct {
 	out                     io.Writer
+	isTTYAttached           bool
 	rows                    [][]string
 	lines                   [][][]string
 	cs                      map[int]int
@@ -111,6 +115,7 @@ type Table struct {
 func NewWriter(writer io.Writer) *Table {
 	t := &Table{
 		out:           writer,
+		isTTYAttached: terminal.IsTerminal(int(os.Stdout.Fd())),
 		rows:          [][]string{},
 		lines:         [][][]string{},
 		cs:            make(map[int]int),
@@ -465,7 +470,7 @@ func (t *Table) Rich(row []string, colors []Colors) {
 
 		if len(colors) > i {
 			color := colors[i]
-			out[0] = format(out[0], color)
+			out[0] = format(out[0], color, t.isTTYAttached)
 		}
 
 		// Append broken words
@@ -637,11 +642,11 @@ func (t *Table) printHeading() {
 				if !t.noWhiteSpace {
 					fmt.Fprintf(t.out, " %s %s",
 						format(padFunc(h, SPACE, v),
-							t.headerParams[y]), pad)
+							t.headerParams[y], t.isTTYAttached), pad)
 				} else {
 					fmt.Fprintf(t.out, "%s %s",
 						format(padFunc(h, SPACE, v),
-							t.headerParams[y]), pad)
+							t.headerParams[y], t.isTTYAttached), pad)
 				}
 			} else {
 				if !t.noWhiteSpace {
@@ -721,7 +726,7 @@ func (t *Table) printFooter() {
 			if is_esc_seq {
 				fmt.Fprintf(t.out, " %s %s",
 					format(padFunc(f, SPACE, v),
-						t.footerParams[y]), pad)
+						t.footerParams[y], t.isTTYAttached), pad)
 			} else {
 				fmt.Fprintf(t.out, " %s %s",
 					padFunc(f, SPACE, v),
@@ -895,7 +900,7 @@ func (t *Table) printRow(columns [][]string, rowIdx int) {
 
 			// Embedding escape sequence with column value
 			if is_esc_seq {
-				str = format(str, t.columnsParams[y])
+				str = format(str, t.columnsParams[y], t.isTTYAttached)
 			}
 
 			// This would print alignment
@@ -1000,7 +1005,7 @@ func (t *Table) printRowMergeCells(writer io.Writer, columns [][]string, rowIdx 
 
 			// Embedding escape sequence with column value
 			if isEscSeq {
-				str = format(str, t.columnsParams[y])
+				str = format(str, t.columnsParams[y], t.isTTYAttached)
 			}
 
 			if t.autoMergeCells {

@@ -109,7 +109,6 @@ func (t *Table) SetHeaderColor(colors ...Colors) {
 	if !term.IsTerminal(int(os.Stdout.Fd())) {
 		return
 	}
-
 	if t.colSize != len(colors) {
 		panic("Number of header colors must be equal to number of headers.")
 	}
@@ -120,6 +119,9 @@ func (t *Table) SetHeaderColor(colors ...Colors) {
 
 // Adding column colors (ANSI codes)
 func (t *Table) SetColumnColor(colors ...Colors) {
+	if !term.IsTerminal(int(os.Stdout.Fd())) {
+		return
+	}
 	if t.colSize != len(colors) {
 		panic("Number of column colors must be equal to number of headers.")
 	}
@@ -130,6 +132,9 @@ func (t *Table) SetColumnColor(colors ...Colors) {
 
 // Adding column colors (ANSI codes)
 func (t *Table) SetFooterColor(colors ...Colors) {
+	if !term.IsTerminal(int(os.Stdout.Fd())) {
+		return
+	}
 	if len(t.footers) != len(colors) {
 		panic("Number of footer colors must be equal to number of footer.")
 	}

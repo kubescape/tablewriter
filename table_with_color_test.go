@@ -8,49 +8,9 @@
 package tablewriter
 
 import (
-	"bytes"
 	"os"
 	"testing"
 )
-
-func TestSetHeaderColorTTY(t *testing.T) {
-	data := [][]string{
-		{"A", "The Good", "500"},
-		{"B", "The Very very Bad Man", "288"},
-		{"C", "The Ugly", "120"},
-		{"D", "The Gopher", "800"},
-	}
-
-	var buf bytes.Buffer
-	table := NewWriter(&buf)
-	table.SetHeader([]string{"Name", "Sign", "Rating"})
-	table.SetHeaderColor(Colors{Bold, FgHiYellowColor}, Colors{Bold, FgHiYellowColor}, Colors{Bold, FgHiYellowColor})
-
-	for _, v := range data {
-		table.Append(v)
-	}
-
-	table.SetAutoMergeCells(true)
-	table.SetRowLine(true)
-	table.Render()
-
-	// table := NewWriter(os.Stdout)
-	var want []string
-	want = append(want, "1;93", "1;93", "1;93")
-
-	// The color codes are added in case of TTY output.
-	got := table.headerParams
-
-	checkEqual(t, got, want, "SetHeaderColor when TTY is attached failed")
-}
-
-func createTempFile(t *testing.T) *os.File {
-	tempFile, err := os.CreateTemp("", "output-*.txt")
-	if err != nil {
-		t.Fatalf("Failed to create a temporary file: %v", err)
-	}
-	return tempFile
-}
 
 func TestSetHeaderColorNonTTY(t *testing.T) {
 	data := [][]string{
@@ -60,23 +20,69 @@ func TestSetHeaderColorNonTTY(t *testing.T) {
 		{"D", "The Gopher", "800"},
 	}
 
-	os.Stdout = createTempFile(t)
+	os.Stdout = nil
 	table := NewWriter(os.Stdout)
 
 	table.SetHeader([]string{"Name", "Sign", "Rating"})
 	want := table.headerParams
 	table.SetHeaderColor(Colors{Bold, FgHiYellowColor}, Colors{Bold, FgHiYellowColor}, Colors{Bold, FgHiYellowColor})
-
-	for _, v := range data {
-		table.Append(v)
-	}
-
+	table.AppendBulk(data)
 	table.SetAutoMergeCells(true)
 	table.SetRowLine(true)
 	table.Render()
 
 	// The color codes are not added in case of non TTY output.
 	got := table.headerParams
+
+	checkEqual(t, got, want, "SetHeaderColor when TTY is not attached failed")
+}
+
+func TestSetColumnColorNonTTY(t *testing.T) {
+	data := [][]string{
+		{"A", "The Good", "500"},
+		{"B", "The Very very Bad Man", "288"},
+		{"C", "The Ugly", "120"},
+		{"D", "The Gopher", "800"},
+	}
+
+	os.Stdout = nil
+	table := NewWriter(os.Stdout)
+
+	want := table.columnsParams
+	table.SetColumnColor(Colors{Bold, FgHiYellowColor}, Colors{Bold, FgHiYellowColor}, Colors{Bold, FgHiYellowColor})
+	table.AppendBulk(data)
+	table.SetAutoMergeCells(true)
+	table.SetRowLine(true)
+	table.Render()
+
+	// The color codes are not added in case of non TTY output.
+	got := table.columnsParams
+
+	checkEqual(t, got, want, "SetColumnColor when TTY is not attached failed")
+}
+
+func TestSetFooterColorNonTTY(t *testing.T) {
+	data := [][]string{
+		{"Regular", "regular line", "1"},
+		{"Thick", "particularly thick line", "2"},
+		{"Double", "double line", "3"},
+	}
+
+	// Set stdout to nil to simulate not being a terminal
+	os.Stdout = nil
+
+	table := NewWriter(os.Stdout)
+	table.SetFooter([]string{"Constant", "Meaning", "Seq"})
+	want := table.footerParams
+	table.SetFooterColor(Colors{Bold, FgHiYellowColor}, Colors{Bold, FgHiYellowColor}, Colors{Bold, FgHiYellowColor})
+	table.AppendBulk(data)
+
+	table.SetAutoMergeCells(true)
+	table.SetRowLine(true)
+	table.Render()
+
+	// The color codes are added in case of TTY output.
+	got := table.footerParams
 
 	checkEqual(t, got, want, "SetHeaderColor when TTY is not attached failed")
 }
